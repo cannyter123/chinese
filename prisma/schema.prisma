@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Word {
+  id                  Int         @id @default(autoincrement())
+  chinese             String      @unique
+  pinyin              String
+  english             String
+  frequency_rank      Int         @unique
+  comprehension_score Float       @default(0)
+  is_active           Boolean     @default(false)
+  is_grammatical      Boolean     @default(false)
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+  word_events         WordEvent[]
+
+  @@index([is_active])
+}
+
+model Conversation {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now())
+  turns      Turn[]
+}
+
+model Turn {
+  id                 Int          @id @default(autoincrement())
+  conversation_id    Int
+  conversation       Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  ai_chinese         String
+  ai_pinyin          String
+  user_english       String?
+  comprehension_json String?
+  turn_index         Int
+  created_at         DateTime     @default(now())
+  word_events        WordEvent[]
+
+  @@index([conversation_id])
+}
+
+model WordEvent {
+  id           Int      @id @default(autoincrement())
+  word_id      Int
+  word         Word     @relation(fields: [word_id], references: [id])
+  turn_id      Int
+  turn         Turn     @relation(fields: [turn_id], references: [id])
+  delta        Float
+  score_before Float
+  score_after  Float
+  created_at   DateTime @default(now())
+
+  @@index([word_id])
+}
+
+model AppState {
+  id                     Int       @id @default(1)
+  active_conversation_id Int?
+  last_expansion_at      DateTime?
+  updated_at             DateTime  @updatedAt
+}
