@@ -16,16 +16,16 @@ export async function POST(req: NextRequest) {
 
     const activeWords = await prisma.word.findMany({ where: { is_active: true } })
 
-    // Fetch recent AI sentences for history context
+    // Fetch recent turns for conversational context (last 10, in chronological order)
     const recentTurns = await prisma.turn.findMany({
       where: { conversation_id },
       orderBy: { turn_index: 'desc' },
-      take: 3,
-      select: { ai_chinese: true },
+      take: 10,
+      select: { ai_chinese: true, ai_pinyin: true, user_english: true },
     })
-    const recentHistory = recentTurns.map(t => t.ai_chinese).reverse()
+    recentTurns.reverse()
 
-    const generated = await generateMessage(activeWords, recentHistory, turn_index)
+    const generated = await generateMessage(activeWords, recentTurns, turn_index)
 
     const turn = await prisma.turn.create({
       data: {

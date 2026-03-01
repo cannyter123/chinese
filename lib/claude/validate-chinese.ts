@@ -36,22 +36,22 @@ export function validateChinese(text: string, activeWords: Word[]): {
   return { valid: invalidChars.length === 0, invalidChars }
 }
 
-// Build a fallback sentence from the top-weighted active words
+// Build a fallback sentence from the least-mastered active words
 export function buildFallbackSentence(activeWords: Word[]): {
   chinese: string
   pinyin: string
 } {
   const nonGram = activeWords
     .filter(w => !w.is_grammatical)
-    .sort((a, b) => a.frequency_rank - b.frequency_rank)
-    .slice(0, 5)
+    .sort((a, b) => a.comprehension_score - b.comprehension_score) // least mastered first
 
   if (nonGram.length === 0) {
     return { chinese: '你好', pinyin: 'nǐ hǎo' }
   }
 
-  // Use first available word to construct simple sentence
-  const word = nonGram[0]
+  // Pick randomly from the 5 least-mastered words so it varies
+  const candidates = nonGram.slice(0, Math.min(5, nonGram.length))
+  const word = candidates[Math.floor(Math.random() * candidates.length)]
   return {
     chinese: `${word.chinese}好吗？`,
     pinyin: `${word.pinyin} hǎo ma?`,

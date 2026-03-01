@@ -32,13 +32,13 @@ model Conversation {
 model Turn {
   id                 Int          @id @default(autoincrement())
   conversation_id    Int
-  conversation       Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
   ai_chinese         String
   ai_pinyin          String
   user_english       String?
   comprehension_json String?
   turn_index         Int
   created_at         DateTime     @default(now())
+  conversation       Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
   word_events        WordEvent[]
 
   @@index([conversation_id])
@@ -47,19 +47,19 @@ model Turn {
 model WordEvent {
   id           Int      @id @default(autoincrement())
   word_id      Int
-  word         Word     @relation(fields: [word_id], references: [id])
   turn_id      Int
-  turn         Turn     @relation(fields: [turn_id], references: [id])
   delta        Float
   score_before Float
   score_after  Float
   created_at   DateTime @default(now())
+  turn         Turn     @relation(fields: [turn_id], references: [id])
+  word         Word     @relation(fields: [word_id], references: [id])
 
   @@index([word_id])
 }
 
 model AppState {
-  id                     Int       @id @default(1)
+  id                     Int       @id @default(autoincrement())
   active_conversation_id Int?
   last_expansion_at      DateTime?
   updated_at             DateTime  @updatedAt

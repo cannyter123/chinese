@@ -65,6 +65,7 @@ const WORDS: [string, string, string, number, boolean][] = [
   ['多', 'duō', 'many/much', 58, false],
   ['经', 'jīng', 'to pass through', 59, false],
   ['么', 'me', 'question suffix', 60, true],
+  ['吗', 'ma', 'yes/no question particle', 321, true],
   ['去', 'qù', 'to go', 61, false],
   ['法', 'fǎ', 'law/method', 62, false],
   ['学', 'xué', 'to study/learn', 63, false],
@@ -356,7 +357,7 @@ async function main() {
 
   let wordRank = 0
   const wordsToCreate = uniqueWords.map(([chinese, pinyin, english, frequency_rank, is_grammatical]) => {
-    const isFirst20NonGram = !is_grammatical && nonGrammatical.findIndex(w => w[0] === chinese) < 20
+    const isFirst20NonGram = !is_grammatical && nonGrammatical.findIndex(w => w[0] === chinese) < 180
 
     return {
       chinese,
