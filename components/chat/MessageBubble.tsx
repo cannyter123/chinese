@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
 interface WordInfo {
   pinyin: string
@@ -46,6 +46,23 @@ export default function MessageBubble({
 }: MessageBubbleProps) {
   const [showPinyin, setShowPinyin] = useState(true)
   const [hoveredChar, setHoveredChar] = useState<string | null>(null)
+  const [speaking, setSpeaking] = useState(false)
+
+  useEffect(() => {
+    if (chinese) speak()
+  }, [chinese])
+
+  function speak() {
+    if (!chinese) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(chinese)
+    utterance.lang = 'zh-CN'
+    utterance.rate = 0.85
+    utterance.onstart = () => setSpeaking(true)
+    utterance.onend = () => setSpeaking(false)
+    utterance.onerror = () => setSpeaking(false)
+    window.speechSynthesis.speak(utterance)
+  }
 
   if (role === 'user') {
     return (
@@ -102,13 +119,24 @@ export default function MessageBubble({
           <div className="mt-1 text-sm text-gray-500 tracking-wide">{pinyin}</div>
         )}
 
-        {/* Toggle button */}
-        <button
-          onClick={() => setShowPinyin(p => !p)}
-          className="mt-2 text-xs text-gray-400 hover:text-gray-600"
-        >
-          {showPinyin ? 'Hide pinyin' : 'Show pinyin'}
-        </button>
+        {/* Controls row */}
+        <div className="mt-2 flex items-center gap-3">
+          <button
+            onClick={() => setShowPinyin(p => !p)}
+            className="text-xs text-gray-400 hover:text-gray-600"
+          >
+            {showPinyin ? 'Hide pinyin' : 'Show pinyin'}
+          </button>
+          <button
+            onClick={speak}
+            title="Listen"
+            className={`text-gray-400 hover:text-blue-500 transition-colors ${speaking ? 'text-blue-500' : ''}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path d="M10 3.75a.75.75 0 0 0-1.264-.546L4.703 7H3.167a.75.75 0 0 0-.7.48A6.985 6.985 0 0 0 2 10c0 .887.165 1.737.468 2.52.111.29.39.48.7.48h1.535l4.033 3.796A.75.75 0 0 0 10 16.25V3.75ZM15.95 5.05a.75.75 0 0 0-1.06 1.061 5.5 5.5 0 0 1 0 7.778.75.75 0 0 0 1.06 1.06 7 7 0 0 0 0-9.899ZM13.828 7.172a.75.75 0 0 0-1.06 1.06 2.5 2.5 0 0 1 0 3.536.75.75 0 0 0 1.06 1.06 4 4 0 0 0 0-5.656Z" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -36,24 +36,21 @@ export function validateChinese(text: string, activeWords: Word[]): {
   return { valid: invalidChars.length === 0, invalidChars }
 }
 
-// Build a fallback sentence from the least-mastered active words
+// Build a fallback sentence using a pronoun subject — "X好吗？" is natural Chinese
 export function buildFallbackSentence(activeWords: Word[]): {
   chinese: string
   pinyin: string
 } {
-  const nonGram = activeWords
-    .filter(w => !w.is_grammatical)
-    .sort((a, b) => a.comprehension_score - b.comprehension_score) // least mastered first
-
-  if (nonGram.length === 0) {
-    return { chinese: '你好', pinyin: 'nǐ hǎo' }
+  // Pronouns make natural subjects for "X好吗？" questions
+  const subjectCandidates = ['你', '他', '她', '我们', '你们']
+  for (const s of subjectCandidates) {
+    const subjectWord = activeWords.find(w => w.chinese === s)
+    if (subjectWord) {
+      return {
+        chinese: `${s}好吗？`,
+        pinyin: `${subjectWord.pinyin} hǎo ma?`,
+      }
+    }
   }
-
-  // Pick randomly from the 5 least-mastered words so it varies
-  const candidates = nonGram.slice(0, Math.min(5, nonGram.length))
-  const word = candidates[Math.floor(Math.random() * candidates.length)]
-  return {
-    chinese: `${word.chinese}好吗？`,
-    pinyin: `${word.pinyin} hǎo ma?`,
-  }
+  return { chinese: '你好！', pinyin: 'nǐ hǎo!' }
 }
